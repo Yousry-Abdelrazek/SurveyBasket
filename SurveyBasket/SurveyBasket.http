@@ -1,6 +1,30 @@
-@SurveyBasket_HostAddress = http://localhost:5010
+@SurveyBasket_HostAddress = https://localhost:7200
 
 GET {{SurveyBasket_HostAddress}}/weatherforecast/
 Accept: application/json
+
+###
+
+GET {{SurveyBasket_HostAddress}}/weatherforecast/
+
+###
+
+GET {{SurveyBasket_HostAddress}}/weatherforecast
+
+###
+
+GET {{SurveyBasket_HostAddress}}/weatherforecast
+
+###
+
+@id=0
+PUT {{SurveyBasket_HostAddress}}/api/polls/{{id}}
+Content-Type: application/json
+
+{
+  //Poll
+  "Title": "Customer Satisfaction Survey",
+  "description": "A survey to gauge customer satisfaction levels."
+}
 
 ###
