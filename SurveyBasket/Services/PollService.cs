@@ -48,4 +48,6 @@ public class PollService : IPollService
         _polls.Remove(poll);
         return true;
     }
+
+
 }
