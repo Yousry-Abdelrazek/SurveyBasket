@@ -1,20 +1,13 @@
 using MapsterMapper;
+using Microsoft.AspNetCore.Identity;
+using SharpGrip.FluentValidation.AutoValidation.Mvc;
+using SharpGrip.FluentValidation.AutoValidation.Mvc.Extensions;
+using SurveyBasket;
+using SurveyBasket.Contracts.Validations;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
-builder.Services.AddControllers();
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
-builder.Services.AddScoped<IPollService,PollService>();
-
-//// Add Mapster configurations
-var mappingConfig = TypeAdapterConfig.GlobalSettings;
-mappingConfig.Scan(Assembly.GetExecutingAssembly());
-
-builder.Services.AddSingleton<IMapper>(new Mapper(mappingConfig));
-
+builder.Services.AddDependencies();
 
 var app = builder.Build();
 

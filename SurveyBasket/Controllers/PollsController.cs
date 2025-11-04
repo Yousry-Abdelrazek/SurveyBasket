@@ -1,5 +1,7 @@
 ﻿
 
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+
 namespace SurveyBasket.Controllers;
 
 [Route("api/[controller]")]
@@ -35,8 +37,19 @@ public class PollsController(IPollService pollService) : ControllerBase
     }
 
     [HttpPost("")]
-    public IActionResult Add([FromBody] CreatePollRequest request)
+    public IActionResult Add([FromBody] CreatePollRequest request
+        /*, [FromServices] IValidator<CreatePollRequest> validator*/)
     {
+        //var validationResult = validator.Validate(request);
+        //if(!validationResult.IsValid)
+        //{
+        //    var modelState = new ModelStateDictionary();
+        //    validationResult.Errors.ForEach(x => modelState.AddModelError(x.PropertyName, x.ErrorMessage));
+
+        //    return ValidationProblem(modelState);
+        //}
+        
+
         //var poll = _pollService.Add(request.MapToPoll());
         var poll = _pollService.Add(request.Adapt<Poll>());
 
@@ -66,11 +79,10 @@ public class PollsController(IPollService pollService) : ControllerBase
         return NoContent();
     }
 
-
     [HttpPost("test")]
-    public IActionResult Test([FromBody] Student request)
+    public IActionResult Test([FromBody] Student student)
     {
-        return Ok("Value Accepted!");
+        return Ok(student);
     }
 
 }
