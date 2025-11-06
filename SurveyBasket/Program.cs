@@ -4,10 +4,13 @@ using SharpGrip.FluentValidation.AutoValidation.Mvc;
 using SharpGrip.FluentValidation.AutoValidation.Mvc.Extensions;
 using SurveyBasket;
 using SurveyBasket.Contracts.Validations;
+using SurveyBasket.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddDependencies();
+
+
+builder.Services.AddDependencies(builder.Configuration);
 
 var app = builder.Build();
 

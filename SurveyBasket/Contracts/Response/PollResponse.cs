@@ -3,6 +3,9 @@
 public record PollResponse(
     int Id , 
     string Title,
-    string Description
+    string Summary,
+    bool IsPublished,
+    DateTime StartsAt,
+    DateTime EndsAt
     );
 
