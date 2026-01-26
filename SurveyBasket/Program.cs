@@ -1,7 +1,3 @@
-
-using SurveyBasket.Middlewares;
-using SurveyBasket.Services;
-
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -9,7 +5,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
-builder.Services.AddScoped<IOS, MacOsService>();
+ 
 
 var app = builder.Build();
 
@@ -21,19 +17,8 @@ if (app.Environment.IsDevelopment())
     //app.MapScalarApiReference();
 }
 
-
-//var logger = app.Logger;
-//app.Use(async (context, next) =>
-//{
-//    logger.LogInformation("Processing request");
-//    await next(context);
-//    logger.LogInformation("Processing response");
-//});
-
-//app.UseMiddleware<CustomMiddleware>();
-
-app.UseCustomMiddleware();
-
+ 
+ 
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
