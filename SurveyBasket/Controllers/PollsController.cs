@@ -23,13 +23,13 @@ public class PollsController(IPollService pollService) : ControllerBase
             return NotFound();
         }
 
-        var _response = poll; 
+        PollResponse _response = (PollResponse)poll; 
         return Ok(_response);
     }
     [HttpPost("")]
     public IActionResult Add([FromBody] CreatePollRequest request)
     {
-        var newPoll = _pollService.Add(request); // Poll = request 
+        var newPoll = _pollService.Add((Poll)request); // Poll = request 
 
         return CreatedAtAction(nameof(Get), new { id = newPoll.Id }, newPoll);
     }
@@ -37,7 +37,7 @@ public class PollsController(IPollService pollService) : ControllerBase
     [HttpPut("{id}")]
     public IActionResult Update([FromRoute] int id ,[FromBody] CreatePollRequest request)
     {
-        var isUpdated = _pollService.Update(id, request);   
+        var isUpdated = _pollService.Update(id,(Poll) request);   
         if (!isUpdated)
             return NotFound();
 
