@@ -23,34 +23,39 @@ public class PollsController(IPollService pollService) : ControllerBase
             return NotFound();
         }
 
-        PollResponse _response = (PollResponse)poll; 
+        //PollResponse _response = (PollResponse)poll;
+
+        var config = new TypeAdapterConfig();
+        config.NewConfig<Poll, PollResponse>()
+            .Map(dest => dest.Notes, src => src.Description); // Example of custom mapping
+
+        PollResponse _response = poll.Adapt<PollResponse>(config); // Using Mapster to map Poll to PollResponse
         return Ok(_response);
     }
-    [HttpPost("")]
-    public IActionResult Add([FromBody] CreatePollRequest request)
-    {
-        var newPoll = _pollService.Add((Poll)request); // Poll = request 
+    //[HttpPost("")]
+    //public IActionResult Add([FromBody] CreatePollRequest request)
+    //{
+    //    var newPoll = _pollService.Add((Poll)request); // Poll = request 
 
-        return CreatedAtAction(nameof(Get), new { id = newPoll.Id }, newPoll);
-    }
+    //    return CreatedAtAction(nameof(Get), new { id = newPoll.Id }, newPoll);
+    //}
 
-    [HttpPut("{id}")]
-    public IActionResult Update([FromRoute] int id ,[FromBody] CreatePollRequest request)
-    {
-        var isUpdated = _pollService.Update(id,(Poll) request);   
-        if (!isUpdated)
-            return NotFound();
+    //[HttpPut("{id}")]
+    //public IActionResult Update([FromRoute] int id ,[FromBody] CreatePollRequest request)
+    //{
+    //    var isUpdated = _pollService.Update(id,request);   
+    //    if (!isUpdated)
+    //        return NotFound();
 
-        return NoContent();
-    }
+    //    return NoContent();
+    //}
 
-    [HttpDelete("{id}")]
-    public IActionResult Delete([FromRoute] int id)
-    {
-        var isDeleted = _pollService.Delete(id);
-        if (!isDeleted)
-            return NotFound();
-        return NoContent();
-    }
-
+    //[HttpDelete("{id}")]
+    //public IActionResult Delete([FromRoute] int id)
+    //{
+    //    var isDeleted = _pollService.Delete(id);
+    //    if (!isDeleted)
+    //        return NotFound();
+    //    return NoContent();
+    //}
 }
