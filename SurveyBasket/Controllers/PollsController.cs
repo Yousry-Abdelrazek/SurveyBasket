@@ -23,13 +23,7 @@ public class PollsController(IPollService pollService) : ControllerBase
             return NotFound();
         }
 
-        //PollResponse _response = (PollResponse)poll;
-
-        var config = new TypeAdapterConfig();
-        config.NewConfig<Poll, PollResponse>()
-            .Map(dest => dest.Notes, src => src.Description); // Example of custom mapping
-
-        PollResponse _response = poll.Adapt<PollResponse>(config); // Using Mapster to map Poll to PollResponse
+        PollResponse _response = poll.Adapt<PollResponse>(); // Using Mapster to map Poll to PollResponse
         return Ok(_response);
     }
     //[HttpPost("")]
