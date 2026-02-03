@@ -54,25 +54,11 @@ public class PollsController(IPollService pollService) : ControllerBase
     }
 
 
-    [HttpGet("Test")]
-    public IActionResult Test()
+    [HttpPost("Test")]
+    public IActionResult Test([FromBody] Student request)
     {
-        var student = new Student
-        {
-            Id = 1,
-            FirstName = "Yousry",
-            MiddleName = "Abdelrazek",
-            LastName = "Nagdy",
-            DateOfBirth = new DateTime(2004, 7, 9),
-            Department = new Department
-            {
-                Id = 1,
-                Name = "Computer Science"
-            }
-        };
 
-        var studentResposne = student.Adapt<StudentResponse>();
+        return Ok("Value Accecpted");
 
-        return Ok(studentResposne);
     }
 }
