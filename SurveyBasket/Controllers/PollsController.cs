@@ -11,7 +11,7 @@ public class PollsController(IPollService pollService) : ControllerBase
     public IActionResult GetAll()
     {
         var polls = _pollService.GetAll();
-        return Ok(polls);
+        return Ok(polls.Adapt<IEnumerable<PollResponse>>());
     }
 
     [HttpGet("{id}")]
@@ -26,30 +26,53 @@ public class PollsController(IPollService pollService) : ControllerBase
         PollResponse _response = poll.Adapt<PollResponse>(); // Using Mapster to map Poll to PollResponse
         return Ok(_response);
     }
-    //[HttpPost("")]
-    //public IActionResult Add([FromBody] CreatePollRequest request)
-    //{
-    //    var newPoll = _pollService.Add((Poll)request); // Poll = request 
+    [HttpPost("")]
+    public IActionResult Add([FromBody] CreatePollRequest request)
+    {
+        var newPoll = _pollService.Add(request.Adapt<Poll>()); // Poll = request 
 
-    //    return CreatedAtAction(nameof(Get), new { id = newPoll.Id }, newPoll);
-    //}
+        return CreatedAtAction(nameof(Get), new { id = newPoll.Id }, newPoll);
+    }
 
-    //[HttpPut("{id}")]
-    //public IActionResult Update([FromRoute] int id ,[FromBody] CreatePollRequest request)
-    //{
-    //    var isUpdated = _pollService.Update(id,request);   
-    //    if (!isUpdated)
-    //        return NotFound();
+    [HttpPut("{id}")]
+    public IActionResult Update([FromRoute] int id, [FromBody] CreatePollRequest request)
+    {
+        var isUpdated = _pollService.Update(id, request.Adapt<Poll>());
+        if (!isUpdated)
+            return NotFound();
 
-    //    return NoContent();
-    //}
+        return NoContent();
+    }
 
-    //[HttpDelete("{id}")]
-    //public IActionResult Delete([FromRoute] int id)
-    //{
-    //    var isDeleted = _pollService.Delete(id);
-    //    if (!isDeleted)
-    //        return NotFound();
-    //    return NoContent();
-    //}
+    [HttpDelete("{id}")]
+    public IActionResult Delete([FromRoute] int id)
+    {
+        var isDeleted = _pollService.Delete(id);
+        if (!isDeleted)
+            return NotFound();
+        return NoContent();
+    }
+
+
+    [HttpGet("Test")]
+    public IActionResult Test()
+    {
+        var student = new Student
+        {
+            Id = 1,
+            FirstName = "Yousry",
+            MiddleName = "Abdelrazek",
+            LastName = "Nagdy",
+            DateOfBirth = new DateTime(2004, 7, 9),
+            Department = new Department
+            {
+                Id = 1,
+                Name = "Computer Science"
+            }
+        };
+
+        var studentResposne = student.Adapt<StudentResponse>();
+
+        return Ok(studentResposne);
+    }
 }
