@@ -1,5 +1,6 @@
 
 
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -17,7 +18,9 @@ mappingConfig.Scan(Assembly.GetExecutingAssembly());
 builder.Services.AddSingleton<IMapper>(new Mapper(mappingConfig));
 
 
-builder.Services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+builder.Services.AddFluentValidationAutoValidation()
+                .AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+
 
 var app = builder.Build();
 

@@ -3,6 +3,7 @@ global using  Mapster;
 global using System.Reflection;
 global using MapsterMapper;
 global using FluentValidation;
+global using SharpGrip.FluentValidation.AutoValidation.Mvc.Extensions;
 
 
 global using SurveyBasket.Models;
