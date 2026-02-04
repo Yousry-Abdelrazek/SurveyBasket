@@ -57,11 +57,6 @@ public class PollsController(IPollService pollService) : ControllerBase
     }
 
 
-    [HttpPost("Test")]
-    public IActionResult Test([FromBody] Student request)
-    {
 
-        return Ok("Value Accecpted");
 
-    }
 }
