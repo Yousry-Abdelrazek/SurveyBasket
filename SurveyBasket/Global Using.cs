@@ -2,6 +2,7 @@
 global using  Mapster;
 global using System.Reflection;
 global using MapsterMapper;
+global using FluentValidation;
 
 
 global using SurveyBasket.Models;

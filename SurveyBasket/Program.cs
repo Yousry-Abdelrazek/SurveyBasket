@@ -17,6 +17,8 @@ mappingConfig.Scan(Assembly.GetExecutingAssembly());
 builder.Services.AddSingleton<IMapper>(new Mapper(mappingConfig));
 
 
+builder.Services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
