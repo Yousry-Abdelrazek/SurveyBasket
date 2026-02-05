@@ -1,55 +1,73 @@
 ﻿
+
+using Microsoft.EntityFrameworkCore;
+using SurveyBasket.Models;
+using System.Threading;
+
 namespace SurveyBasket.Services;
 
-public class PollService : IPollService
+public class PollService(ApplicationDbContext context) : IPollService
 {
-    private static readonly List<Poll> _polls = new List<Poll>()
-    {
-        new Poll()
-        {
-            Id = 1 ,
-            Title = "Poll 1",
-            Description = "Description for Poll 1"
-        },
-        new Poll()
-        {
-            Id = 2 ,
-            Title = "Poll 2",
-            Description = "Description for Poll 2"
-        },
-    };
-    public IEnumerable<Poll> GetAll() => _polls;
+    private readonly ApplicationDbContext _context = context;
+    public async  Task<IEnumerable<Poll>> GetAllAsync() =>
+        await _context.Polls.AsNoTracking().ToListAsync();
+
+    public async Task<Poll?> GetAsync(int id , CancellationToken cancellationToken = default) => await _context.Polls.FirstOrDefaultAsync(p => p.Id == id);
 
 
-    public Poll? Get(int id) => _polls.FirstOrDefault(x => x.Id == id);
-    public Poll Add(Poll poll)
+
+    public async Task<Poll> AddAsync(Poll poll, CancellationToken cancellationToken = default)
     {
-        poll.Id = _polls.Count + 1;
-        _polls.Add(poll);
+        await _context.Polls.AddAsync(poll);
+        await _context.SaveChangesAsync();
+
         return poll;
     }
 
-    public bool Update(int id, Poll poll)
+    public async Task<bool> UpdateAsync(int id, Poll poll, CancellationToken cancellationToken = default)
     {
-        var existingPoll = Get(id);
+        var existingPoll = await GetAsync(id, cancellationToken);
         if (existingPoll is null)
         {
             return false;
         }
         existingPoll.Title = poll.Title;
-        existingPoll.Description = poll.Description;
+        existingPoll.Summary = poll.Summary;
+        existingPoll.StartsAt = poll.StartsAt;
+        existingPoll.EndsAt = poll.EndsAt;
+
+       
+        await _context.SaveChangesAsync(cancellationToken);
         return true;
     }
 
-    public bool Delete(int id)
+    public async Task<bool> DeleteAsync(int id, CancellationToken cancellationToken)
     {
-        var poll = Get(id);
+        var poll = await GetAsync(id, cancellationToken);
         if (poll is null)
         {
             return false;
         }
-        _polls.Remove(poll);
+        _context.Polls.Remove(poll);
+        await _context.SaveChangesAsync(cancellationToken);
+
+
+
         return true;
 
+    }
+
+    public async Task<bool> TogglePublishStatusAsync(int id, CancellationToken cancellationToken = default)
+    {
+        var existingPoll = await GetAsync(id, cancellationToken);
+        if (existingPoll is null)
+        {
+            return false;
+        }
+        existingPoll.IsPublished = !existingPoll.IsPublished; ;
+
+
+        await _context.SaveChangesAsync(cancellationToken);
+        return true;
     }
 }
