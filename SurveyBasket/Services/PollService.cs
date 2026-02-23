@@ -1,7 +1,7 @@
 ﻿
 
 using Microsoft.EntityFrameworkCore;
-using SurveyBasket.Models;
+using SurveyBasket.Entities;
 using System.Threading;
 
 namespace SurveyBasket.Services;

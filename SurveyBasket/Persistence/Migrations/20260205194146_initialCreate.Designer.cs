@@ -25,7 +25,7 @@ namespace SurveyBasket.Persistence.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("SurveyBasket.Models.Poll", b =>
+            modelBuilder.Entity("SurveyBasket.Entities.Poll", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()

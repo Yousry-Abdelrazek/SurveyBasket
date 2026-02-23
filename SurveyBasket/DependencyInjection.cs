@@ -1,4 +1,8 @@
-﻿namespace SurveyBasket;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+
+namespace SurveyBasket;
 
 public static class DependencyInjection
 {
@@ -8,8 +12,9 @@ public static class DependencyInjection
         services.AddControllers();
 
         services.AddSwaggerServices()
-                .AddMapsterConf()
-                .AddFluentValidationConf();
+                .AddMapsterConfig()
+                .AddFluentValidationConfig()
+                .AddAuthConfig();
 
 
         var connectionString = configuration.GetConnectionString("DefaultConnection") ??
@@ -19,16 +24,17 @@ public static class DependencyInjection
            options.UseSqlServer(connectionString));
 
         services.AddScoped<IPollService, PollService>();
+        services.AddScoped<IAuthService, AuthService>();
 
         return services;
     }
-    public static IServiceCollection AddSwaggerServices(this IServiceCollection services)
+    private static IServiceCollection AddSwaggerServices(this IServiceCollection services)
     {
         services.AddOpenApi();
         services.AddSwaggerGen();
         return services;
     }
-    public static IServiceCollection AddMapsterConf(this IServiceCollection services)
+    private static IServiceCollection AddMapsterConfig(this IServiceCollection services)
     {
         var mappingConfig = TypeAdapterConfig.GlobalSettings;
         mappingConfig.Scan(Assembly.GetExecutingAssembly());
@@ -36,10 +42,47 @@ public static class DependencyInjection
         services.AddSingleton<IMapper>(new Mapper(mappingConfig));
         return services;
     }
-    public static IServiceCollection AddFluentValidationConf(this IServiceCollection services)
+    private static IServiceCollection AddFluentValidationConfig(this IServiceCollection services)
     {
         services.AddFluentValidationAutoValidation()
                  .AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+        return services;
+    }
+    private static IServiceCollection AddAuthConfig(this IServiceCollection services)
+    {
+        services.AddSingleton<IJwtProvider, JwtProvider>();
+
+
+        services.AddIdentity<ApplicationUser, IdentityRole>()
+                .AddEntityFrameworkStores<ApplicationDbContext>();
+
+        services.AddAuthentication(options =>
+        {
+            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme; 
+            // to specify that the default authentication scheme is JWT Bearer, which means that the application will expect JWT tokens in the Authorization header of incoming requests for authentication.
+            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            // to specify that the default challenge scheme is JWT Bearer, which means that if an unauthenticated user tries to access a protected resource, the application will respond with a challenge that indicates that the client should provide a JWT token for authentication.
+        })
+            .AddJwtBearer(o =>
+            {
+                o.SaveToken = true; // Anytime while request come to the server with token in header , this token will be saved in the context of the request to be used later in the controllers
+                o.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true, // to validate the signature of the token
+                    ValidateIssuer = true, // to validate the issuer of the token
+                    ValidateAudience = true, // to validate the audience of the token
+                    ValidateLifetime = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("YvQfJrq4sPA30c5LsaENXwfuF6qDPGej")),
+                    ValidIssuer = "SurveyBasketApp",
+                    ValidAudience = "SurveyBasketApp users"
+
+                };
+
+            
+            
+            }
+            );
+
         return services;
     }
 

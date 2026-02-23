@@ -1,4 +1,4 @@
-﻿namespace SurveyBasket.Models;
+﻿namespace SurveyBasket.Entities;
 
 public class Poll
 {
