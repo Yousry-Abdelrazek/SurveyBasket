@@ -11,11 +11,12 @@ public static class DependencyInjection
     {
         services.AddControllers();
 
+        services.AddAuthConfig(configuration);
+
         services.AddSwaggerServices()
                 .AddMapsterConfig()
-                .AddFluentValidationConfig()
-                .AddAuthConfig();
-
+                .AddFluentValidationConfig();
+                
 
         var connectionString = configuration.GetConnectionString("DefaultConnection") ??
             throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
@@ -48,7 +49,8 @@ public static class DependencyInjection
                  .AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
         return services;
     }
-    private static IServiceCollection AddAuthConfig(this IServiceCollection services)
+    private static IServiceCollection AddAuthConfig(this IServiceCollection services
+        , IConfiguration configuration )
     {
         services.AddSingleton<IJwtProvider, JwtProvider>();
 
@@ -72,9 +74,9 @@ public static class DependencyInjection
                     ValidateIssuer = true, // to validate the issuer of the token
                     ValidateAudience = true, // to validate the audience of the token
                     ValidateLifetime = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("YvQfJrq4sPA30c5LsaENXwfuF6qDPGej")),
-                    ValidIssuer = "SurveyBasketApp",
-                    ValidAudience = "SurveyBasketApp users"
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"]!)),
+                    ValidIssuer = configuration["Jwt:Issuer"],
+                    ValidAudience = configuration["Jwt:Audience"]
 
                 };
 
