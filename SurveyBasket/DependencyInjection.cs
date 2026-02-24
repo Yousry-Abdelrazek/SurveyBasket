@@ -54,9 +54,13 @@ public static class DependencyInjection
     {
         services.AddSingleton<IJwtProvider, JwtProvider>();
 
-
         services.AddIdentity<ApplicationUser, IdentityRole>()
-                .AddEntityFrameworkStores<ApplicationDbContext>();
+        .AddEntityFrameworkStores<ApplicationDbContext>();
+
+        services.Configure<JwtOptions>(configuration.GetSection(JwtOptions.SectionName));
+
+        var setting = configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>();
+
 
         services.AddAuthentication(options =>
         {
@@ -74,9 +78,9 @@ public static class DependencyInjection
                     ValidateIssuer = true, // to validate the issuer of the token
                     ValidateAudience = true, // to validate the audience of the token
                     ValidateLifetime = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"]!)),
-                    ValidIssuer = configuration["Jwt:Issuer"],
-                    ValidAudience = configuration["Jwt:Audience"]
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(setting?.Key!)),
+                    ValidIssuer = configuration[setting?.Issuer!],
+                    ValidAudience = configuration[setting?.Audience!]
 
                 };
 
