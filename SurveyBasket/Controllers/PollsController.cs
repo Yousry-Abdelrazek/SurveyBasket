@@ -11,8 +11,8 @@ public class PollsController(IPollService pollService) : ControllerBase
     // Using primary constructor syntax to inject the service
     private readonly IPollService _pollService = pollService;
 
-    [HttpGet("")]
     [Authorize]
+    [HttpGet("")]
     public async Task<IActionResult> GetAll()
     {
         var polls = await _pollService.GetAllAsync();

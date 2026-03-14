@@ -65,22 +65,20 @@ public static class DependencyInjection
         services.AddAuthentication(options =>
         {
             options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme; 
-            // to specify that the default authentication scheme is JWT Bearer, which means that the application will expect JWT tokens in the Authorization header of incoming requests for authentication.
             options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            // to specify that the default challenge scheme is JWT Bearer, which means that if an unauthenticated user tries to access a protected resource, the application will respond with a challenge that indicates that the client should provide a JWT token for authentication.
         })
             .AddJwtBearer(o =>
             {
-                o.SaveToken = true; // Anytime while request come to the server with token in header , this token will be saved in the context of the request to be used later in the controllers
+                o.SaveToken = true;
                 o.TokenValidationParameters = new TokenValidationParameters
                 {
-                    ValidateIssuerSigningKey = true, // to validate the signature of the token
-                    ValidateIssuer = true, // to validate the issuer of the token
-                    ValidateAudience = true, // to validate the audience of the token
+                    ValidateIssuerSigningKey = true,
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
                     ValidateLifetime = true,
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(setting?.Key!)),
-                    ValidIssuer = configuration[setting?.Issuer!],
-                    ValidAudience = configuration[setting?.Audience!]
+                    ValidIssuer = setting?.Issuer,
+                    ValidAudience = setting?.Audience
 
                 };
 

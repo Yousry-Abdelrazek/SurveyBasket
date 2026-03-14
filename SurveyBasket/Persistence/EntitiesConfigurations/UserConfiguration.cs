@@ -8,6 +8,12 @@ public class UserConfigurations : IEntityTypeConfiguration<ApplicationUser>
         //.Property(x => x.Title)
         //.HasMaxLength(100);
 
+        builder
+            .OwnsMany(x => x.RefreshTokens)
+            .ToTable("RefreshTokens")
+            .WithOwner()
+            .HasForeignKey("UserId");
+
         builder.Property(x => x.FirstName)
             .HasMaxLength(100);
         builder.Property(x => x.LastName)
