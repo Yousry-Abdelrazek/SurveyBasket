@@ -12,5 +12,7 @@ public class PollConfigurations : IEntityTypeConfiguration<Poll>
         builder.Property(x => x.Title).HasMaxLength(100);
         builder.Property(x => x.Summary).HasMaxLength(1500);
 
+        
+
     }
 }

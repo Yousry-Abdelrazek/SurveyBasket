@@ -6,12 +6,13 @@ namespace SurveyBasket.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
+[Authorize]
+
 public class PollsController(IPollService pollService) : ControllerBase
 {
     // Using primary constructor syntax to inject the service
     private readonly IPollService _pollService = pollService;
 
-    [Authorize]
     [HttpGet("")]
     public async Task<IActionResult> GetAll()
     {
@@ -37,7 +38,7 @@ public class PollsController(IPollService pollService) : ControllerBase
 
         var newPoll = await _pollService.AddAsync(request.Adapt<Poll>(), cancellationToken); // Poll = request 
 
-        return CreatedAtAction(nameof(Get), new { id = newPoll.Id }, newPoll);
+        return CreatedAtAction(nameof(Get), new { id = newPoll.Id }, newPoll.Adapt<PollResponse>());
     }
 
     [HttpPut("{id}")]
