@@ -1,14 +1,16 @@
-﻿namespace SurveyBasket.Services;
+﻿using OneOf;
+
+namespace SurveyBasket.Services;
 
 public interface IPollService
 {
     Task<IEnumerable<Poll>> GetAllAsync();
-    Task<Poll?> GetAsync(int id , CancellationToken cancellationToken = default);
+    Task<Result<PollResponse>> GetAsync(int id, CancellationToken cancellationToken = default);
 
-    Task<Poll> AddAsync(Poll poll, CancellationToken cancellationToken = default);
-    Task<bool> UpdateAsync(int id, Poll poll, CancellationToken cancellationToken = default);
-    Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default);
+    Task<PollResponse> AddAsync(PollRequest poll, CancellationToken cancellationToken = default);
+    Task<Result> UpdateAsync(int id, PollRequest poll, CancellationToken cancellationToken = default);
+    Task<Result> DeleteAsync(int id, CancellationToken cancellationToken = default);
 
-    Task<bool> TogglePublishStatusAsync(int id, CancellationToken cancellationToken = default);
+    Task<Result> TogglePublishStatusAsync(int id, CancellationToken cancellationToken = default);
 
 }
