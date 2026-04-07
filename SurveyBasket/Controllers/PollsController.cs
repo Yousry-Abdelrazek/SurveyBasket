@@ -27,7 +27,7 @@ public class PollsController(IPollService pollService) : ControllerBase
 
         return result.IsSuccess
             ? Ok(result.Value)
-            : Problem(statusCode: 404, title: result.Error.Code, detail: result.Error.Description);
+            : result.ToProblem(statusCode: 404);
 
     }
     [HttpPost("")]
@@ -46,7 +46,7 @@ public class PollsController(IPollService pollService) : ControllerBase
 
         return result.IsSuccess
             ? NoContent()
-            : Problem(statusCode: 404, title: result.Error.Code, detail: result.Error.Description);
+            : result.ToProblem(statusCode: 404);
 
 
     }
@@ -57,7 +57,7 @@ public class PollsController(IPollService pollService) : ControllerBase
         var result = await _pollService.DeleteAsync(id, cancellationToken);
         return result.IsSuccess
             ? NoContent()
-            : Problem(statusCode: 404, title: result.Error.Code, detail: result.Error.Description);
+            : result.ToProblem(statusCode: 404);
     }
 
     [HttpPut("{id}/toggle-publish")]
@@ -67,7 +67,7 @@ public class PollsController(IPollService pollService) : ControllerBase
 
         return result.IsSuccess
                     ? NoContent()
-                    : Problem(statusCode: 404, title: result.Error.Code, detail: result.Error.Description);
+                    : result.ToProblem(statusCode: 404);
     }
 
 
