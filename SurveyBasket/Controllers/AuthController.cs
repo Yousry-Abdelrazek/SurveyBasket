@@ -14,6 +14,7 @@ public class AuthController(IAuthService authService) : ControllerBase
     public async Task<IActionResult> LoginAsync([FromBody] LoginRequest loginRequest , CancellationToken cancellationToken = default)
     {
         var authResult = await _authService.GetTokenAsync(loginRequest.Email, loginRequest.Password, cancellationToken);
+        //throw new Exception("Test exception for global handler");
 
         return authResult.IsSuccess
             ? Ok(authResult.Value)

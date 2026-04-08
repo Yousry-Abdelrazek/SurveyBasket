@@ -1,5 +1,6 @@
 ﻿
 
+using Azure.Core;
 using Microsoft.EntityFrameworkCore;
 using OneOf;
 using SurveyBasket.Entities;
@@ -26,26 +27,37 @@ public class PollService(ApplicationDbContext context) : IPollService
 
 
 
-    public async Task<PollResponse> AddAsync(PollRequest request, CancellationToken cancellationToken = default)
+    public async Task<Result<PollResponse>> AddAsync(PollRequest request, CancellationToken cancellationToken = default)
     {
+        var isExisting = await _context.Polls.AnyAsync(p => p.Title == request.Title, cancellationToken);
+        if (isExisting) 
+            return Result.Failure<PollResponse>(PollErrors.PollAlreadyExists);
+
         var poll = request.Adapt<Poll>();
         await _context.Polls.AddAsync(poll);
         await _context.SaveChangesAsync();
 
-        return poll.Adapt<PollResponse>(); 
+        return Result.Success<PollResponse>(poll.Adapt<PollResponse>());
+
     }
 
-    public async Task<Result> UpdateAsync(int id, PollRequest poll, CancellationToken cancellationToken = default)
+    public async Task<Result> UpdateAsync(int id, PollRequest request, CancellationToken cancellationToken = default)
     {
+        var isExisting = await _context.Polls.AnyAsync(p => p.Title == request.Title && p.Id != id, cancellationToken);
+
+        if(isExisting)
+            return Result.Failure(PollErrors.PollAlreadyExists);
+
+
         var existingPoll = await _context.Polls.FirstOrDefaultAsync(p => p.Id == id);
         if (existingPoll is null)
         {
             return Result.Failure(PollErrors.PollNotFound) ;
         }
-        existingPoll.Title = poll.Title;
-        existingPoll.Summary = poll.Summary;
-        existingPoll.StartsAt = poll.StartsAt;
-        existingPoll.EndsAt = poll.EndsAt;
+        existingPoll.Title = request.Title;
+        existingPoll.Summary = request.Summary;
+        existingPoll.StartsAt = request.StartsAt;
+        existingPoll.EndsAt = request.EndsAt;
 
 
         await _context.SaveChangesAsync(cancellationToken);
@@ -82,3 +94,4 @@ public class PollService(ApplicationDbContext context) : IPollService
         return Result.Success();
     }
 }
+
