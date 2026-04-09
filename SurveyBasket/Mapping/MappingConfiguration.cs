@@ -1,4 +1,6 @@
-﻿namespace SurveyBasket.Mapping;
+﻿using SurveyBasket.Contracts.Questions;
+
+namespace SurveyBasket.Mapping;
 
 public class MappingConfiguration : IRegister
 {
@@ -14,6 +16,13 @@ public class MappingConfiguration : IRegister
         // mapping Department Name is automatic because of the same name
         // If you want to ignore it, you can use the following line:
         //    .Ignore(dest => dest.DepartmentName);
+
+
+        //config.NewConfig<QuestionRequest, Question>()
+        //    .Ignore(nameof(Question.Answers));
+
+        config.NewConfig<QuestionRequest, Question>()
+            .Map(dest => dest.Answers, src => src.Answers.Select(a => new Answer { Content = a }));
 
     }
 }

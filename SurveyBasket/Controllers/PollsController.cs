@@ -46,8 +46,11 @@ public class PollsController(IPollService pollService) : ControllerBase
     {
         var result = await _pollService.UpdateAsync(id, request, cancellationToken);
 
-        return result.IsSuccess
-            ? NoContent()
+        if (result.IsSuccess) 
+            return NoContent();
+
+        return result.Error.Equals(PollErrors.PollAlreadyExists)
+            ? result.ToProblem(statusCode: 409)
             : result.ToProblem(statusCode: 404);
 
 
