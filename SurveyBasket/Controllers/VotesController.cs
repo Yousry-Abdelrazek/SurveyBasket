@@ -19,12 +19,9 @@ public class VotesController(IQuestionService questionService , IVoteService vot
 
         var result = await _questionService.GetAvailableAsync(pollId, userId!, cancellationToken);
 
-        if(result.IsSuccess)
-            return Ok(result.Value);
-
-        return result.Error.Equals(VoteErrors.VoteAleardyExists)
-            ? result.ToProblem(StatusCodes.Status409Conflict)
-            : result.ToProblem(StatusCodes.Status404NotFound);
+        return result.IsSuccess
+            ? Ok(result.Value)
+            : result.ToProblem();
     }
 
 
@@ -32,14 +29,9 @@ public class VotesController(IQuestionService questionService , IVoteService vot
     public async Task<IActionResult> Vote([FromRoute] int pollId , [FromBody] VoteRequest request, CancellationToken cancellationToken)
     {
         var result = await _voteService.AddAsync(pollId,User.GetUserId()!, request, cancellationToken);
-
-        if (result.IsSuccess)
-            return Created();
-
-
-        return result.Error.Equals(VoteErrors.VoteAleardyExists)
-            ? result.ToProblem(StatusCodes.Status409Conflict)
-            : result.ToProblem(StatusCodes.Status404NotFound);
+        return result.IsSuccess
+            ? NoContent()
+            : result.ToProblem();
 
 
     }

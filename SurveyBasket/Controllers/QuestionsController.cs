@@ -19,7 +19,7 @@ public class QuestionsController(IQuestionService questionService) : ControllerB
 
         return result.IsSuccess
             ? Ok(result.Value)
-            : result.ToProblem(StatusCodes.Status404NotFound);
+            : result.ToProblem();
     }
 
 
@@ -30,7 +30,7 @@ public class QuestionsController(IQuestionService questionService) : ControllerB
         var result = await _questionService.GetAsync(pollId, id, cancellationToken);
         return result.IsSuccess
             ? Ok(result.Value)
-            : result.ToProblem(StatusCodes.Status404NotFound);
+            : result.ToProblem();
     }
 
     [HttpPost("")]
@@ -41,8 +41,8 @@ public class QuestionsController(IQuestionService questionService) : ControllerB
             return CreatedAtAction(nameof(Get), new { pollId = pollId, id = result.Value.Id }, result.Value);
 
         return result.Error.Equals(QuestionErrors.QuestionAlreadyExists)
-            ? result.ToProblem(StatusCodes.Status409Conflict)
-            : result.ToProblem(StatusCodes.Status404NotFound);
+            ? result.ToProblem()
+            : result.ToProblem();
         
     }
 
@@ -53,7 +53,7 @@ public class QuestionsController(IQuestionService questionService) : ControllerB
 
         return result.IsSuccess
                     ? NoContent()
-                    : result.ToProblem(StatusCodes.Status404NotFound);
+                    : result.ToProblem();
     }
 
     [HttpPut("{id}")]
@@ -64,8 +64,8 @@ public class QuestionsController(IQuestionService questionService) : ControllerB
             return NoContent();
 
         return result.Error.Equals(QuestionErrors.QuestionAlreadyExists)
-            ? result.ToProblem(StatusCodes.Status409Conflict)
-            : result.ToProblem(StatusCodes.Status404NotFound);
+            ? result.ToProblem()
+            : result.ToProblem();
 
     }
 

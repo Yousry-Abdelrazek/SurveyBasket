@@ -18,7 +18,7 @@ public class AuthController(IAuthService authService) : ControllerBase
 
         return authResult.IsSuccess
             ? Ok(authResult.Value)
-            : authResult.ToProblem(StatusCodes.Status400BadRequest);
+            : authResult.ToProblem();
 
     }
 
@@ -29,7 +29,7 @@ public class AuthController(IAuthService authService) : ControllerBase
 
         return authResult.IsSuccess
             ? Ok(authResult.Value)
-            : authResult.ToProblem(StatusCodes.Status400BadRequest);
+            : authResult.ToProblem();
         //    : Problem(title: authResult.Error.Code, detail: authResult.Error.Description, statusCode: StatusCodes.Status400BadRequest);
 
     }
@@ -41,7 +41,7 @@ public class AuthController(IAuthService authService) : ControllerBase
 
         return authResult.IsSuccess 
             ? NoContent()
-            : authResult.ToProblem(StatusCodes.Status400BadRequest);
+            : authResult.ToProblem();
     }
 
 

@@ -32,7 +32,7 @@ public class PollsController(IPollService pollService) : ControllerBase
 
         return result.IsSuccess
             ? Ok(result.Value)
-            : result.ToProblem(statusCode: 404);
+            : result.ToProblem();
 
     }
     [HttpPost("")]
@@ -43,7 +43,7 @@ public class PollsController(IPollService pollService) : ControllerBase
 
         return result.IsSuccess
             ? CreatedAtAction(nameof(Get), new { id = result.Value.Id }, result.Value)
-            : result.ToProblem(statusCode: 409);
+            : result.ToProblem();
     }
 
     [HttpPut("{id}")]
@@ -51,12 +51,9 @@ public class PollsController(IPollService pollService) : ControllerBase
     {
         var result = await _pollService.UpdateAsync(id, request, cancellationToken);
 
-        if (result.IsSuccess) 
-            return NoContent();
-
-        return result.Error.Equals(PollErrors.PollAlreadyExists)
-            ? result.ToProblem(statusCode: 409)
-            : result.ToProblem(statusCode: 404);
+        return result.IsSuccess
+            ? NoContent()
+            : result.ToProblem();
 
 
     }
@@ -67,7 +64,7 @@ public class PollsController(IPollService pollService) : ControllerBase
         var result = await _pollService.DeleteAsync(id, cancellationToken);
         return result.IsSuccess
             ? NoContent()
-            : result.ToProblem(statusCode: 404);
+            : result.ToProblem();
     }
 
     [HttpPut("{id}/toggle-publish")]
@@ -77,7 +74,7 @@ public class PollsController(IPollService pollService) : ControllerBase
 
         return result.IsSuccess
                     ? NoContent()
-                    : result.ToProblem(statusCode: 404);
+                    : result.ToProblem();
     }
 
 
