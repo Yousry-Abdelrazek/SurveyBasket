@@ -11,12 +11,24 @@ namespace SurveyBasket.Services;
 public class PollService(ApplicationDbContext context) : IPollService
 {
     private readonly ApplicationDbContext _context = context;
-    public async  Task<IEnumerable<Poll>> GetAllAsync() =>
-        await _context.Polls.AsNoTracking().ToListAsync();
+    public async  Task<IEnumerable<PollResponse>> GetAllAsync(CancellationToken cancellationToken) =>
+        await _context.Polls
+        .AsNoTracking()
+        .ProjectToType<PollResponse>()
+        .ToListAsync(cancellationToken);
+
+    public async Task<IEnumerable<PollResponse>> GetCurrentAsync(CancellationToken cancellationToken = default) =>
+        await _context.Polls
+        .AsNoTracking()
+        .Where(p => p.IsPublished && p.StartsAt <= DateOnly.FromDateTime(DateTime.UtcNow) && p.EndsAt >= DateOnly.FromDateTime(DateTime.UtcNow))
+        .ProjectToType<PollResponse>()
+        .ToListAsync(cancellationToken);
+
+
 
     public async Task<Result<PollResponse>> GetAsync(int id, CancellationToken cancellationToken = default)
     {
-        var poll = await _context.Polls.FirstOrDefaultAsync(p => p.Id == id);
+        var poll = await _context.Polls.FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
 
         return poll is not null
             ? Result.Success<PollResponse>(poll.Adapt<PollResponse>())
@@ -34,8 +46,8 @@ public class PollService(ApplicationDbContext context) : IPollService
             return Result.Failure<PollResponse>(PollErrors.PollAlreadyExists);
 
         var poll = request.Adapt<Poll>();
-        await _context.Polls.AddAsync(poll);
-        await _context.SaveChangesAsync();
+        await _context.Polls.AddAsync(poll, cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken);
 
         return Result.Success<PollResponse>(poll.Adapt<PollResponse>());
 
@@ -49,7 +61,7 @@ public class PollService(ApplicationDbContext context) : IPollService
             return Result.Failure(PollErrors.PollAlreadyExists);
 
 
-        var existingPoll = await _context.Polls.FirstOrDefaultAsync(p => p.Id == id);
+        var existingPoll = await _context.Polls.FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
         if (existingPoll is null)
         {
             return Result.Failure(PollErrors.PollNotFound) ;
@@ -66,7 +78,7 @@ public class PollService(ApplicationDbContext context) : IPollService
 
     public async Task<Result> DeleteAsync(int id, CancellationToken cancellationToken)
     {
-        var poll = await _context.Polls.FirstOrDefaultAsync(p => p.Id == id);
+        var poll = await _context.Polls.FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
         if (poll is null)
         {
             return Result.Failure(PollErrors.PollNotFound);
@@ -82,7 +94,7 @@ public class PollService(ApplicationDbContext context) : IPollService
 
     public async Task<Result> TogglePublishStatusAsync(int id, CancellationToken cancellationToken = default)
     {
-        var existingPoll = await _context.Polls.FirstOrDefaultAsync(p => p.Id == id);
+        var existingPoll = await _context.Polls.FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
         if (existingPoll is null)
         {
             return Result.Failure(PollErrors.PollNotFound);
