@@ -8,7 +8,7 @@ global using Microsoft.EntityFrameworkCore;
 global using Microsoft.EntityFrameworkCore.Metadata.Builders;
 global using Microsoft.AspNetCore.Identity;
 global using Microsoft.AspNetCore.Authentication.JwtBearer;
-
+global using Serilog;
 
 global using SurveyBasket;
 global using SurveyBasket.Entities;

@@ -6,13 +6,17 @@ namespace SurveyBasket.Controllers;
 
 [Route("[controller]")]
 [ApiController]
-public class AuthController(IAuthService authService) : ControllerBase
+public class AuthController(IAuthService authService, ILogger<AuthController> logger) : ControllerBase
 {
     private readonly IAuthService _authService = authService;
+    private readonly ILogger<AuthController> _logger = logger;
 
     [HttpPost("")]
     public async Task<IActionResult> LoginAsync([FromBody] LoginRequest loginRequest , CancellationToken cancellationToken = default)
     {
+        _logger.LogInformation("Login attempt for email: {Email} and password: {password}", loginRequest.Email,loginRequest.Password);
+
+
         var authResult = await _authService.GetTokenAsync(loginRequest.Email, loginRequest.Password, cancellationToken);
         //throw new Exception("Test exception for global handler");
 

@@ -1,10 +1,15 @@
 
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
 builder.Services.AddDependencies(builder.Configuration);
 
+
+builder.Host.UseSerilog((context, configuration) =>
+    configuration.ReadFrom.Configuration(context.Configuration)
+);
 
 
 var app = builder.Build();
@@ -17,6 +22,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseSerilogRequestLogging();
 
 app.UseHttpsRedirection();
 app.UseCors();
