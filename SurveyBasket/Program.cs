@@ -1,10 +1,14 @@
-
-
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
 builder.Services.AddDependencies(builder.Configuration);
+
+
+builder.Services.AddDistributedMemoryCache();
+
+
+
 
 
 builder.Host.UseSerilog((context, configuration) =>
@@ -26,6 +30,8 @@ app.UseSerilogRequestLogging();
 
 app.UseHttpsRedirection();
 app.UseCors();
+
+
 
 app.UseAuthorization();
 

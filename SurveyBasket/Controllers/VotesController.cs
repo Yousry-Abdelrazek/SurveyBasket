@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.OutputCaching;
 using SurveyBasket.Contracts.Votes;
 using SurveyBasket.Extensions;
 
@@ -15,7 +16,8 @@ public class VotesController(IQuestionService questionService , IVoteService vot
     [HttpGet("")]
     public async Task<IActionResult> Start([FromRoute] int pollId , CancellationToken cancellationToken)
     {
-        var userId = User.GetUserId();
+        var userId = /*"49c8269e-1f6e-4d2a-bd8a-3dc396e38d4e";*/
+            User.GetUserId();
 
         var result = await _questionService.GetAvailableAsync(pollId, userId!, cancellationToken);
 
