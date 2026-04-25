@@ -4,16 +4,6 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDependencies(builder.Configuration);
 
-// Remomve 
-//builder.Services.AddDistributedMemoryCache();
-
-// Add 
-builder.Services.AddStackExchangeRedisCache(options =>
-{
-    options.Configuration = builder.Configuration.GetConnectionString("Redis");
-    options.InstanceName = "SurveyBasket_";
-});
-
 
 
 
