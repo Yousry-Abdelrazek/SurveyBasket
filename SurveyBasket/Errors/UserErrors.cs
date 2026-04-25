@@ -7,5 +7,12 @@ public class UserErrors
     public static readonly Error InvalidJwtToken = 
         new Error("User.InvalidTokens", "Invalid Access/Refresh Token", StatusCodes.Status401Unauthorized);
     public static readonly Error InvalidRefreshToken = new Error("User.InvalidRefreshToken", "Invalid Refresh Token", StatusCodes.Status401Unauthorized);
-     
+
+    public static readonly Error DuplicatedEmail = 
+        new Error("User.DuplicatedEmail", "A user with the same email already exists.", StatusCodes.Status409Conflict);
+
+
+
+
+
 }

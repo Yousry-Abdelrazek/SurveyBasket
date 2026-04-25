@@ -108,6 +108,45 @@ public class AuthService(UserManager<ApplicationUser> userManager, IJwtProvider 
 
         return Result.Success();
     }
+    public async Task<Result<AuthResponse>> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken = default)
+    {
+        var emailIsExists = await _userManager.FindByEmailAsync(request.Email) is not null ;
+
+        if(emailIsExists)
+            return Result.Failure<AuthResponse>(UserErrors.DuplicatedEmail);
+
+        var user = request.Adapt<ApplicationUser>();
+
+        var result = await _userManager.CreateAsync(user, request.Password);
+
+        if(result.Succeeded)
+        {
+            // Generate Jwt Token 
+            var (token, expiresIn) = _jwtProvider.GenerateToken(user);
+
+            var refreshToken = GenerateRefreshToken();
+            var refreshTokenExpiration = DateTime.UtcNow.AddDays(_refreshTokenExpireInDays);
+
+            user.RefreshTokens.Add(new RefreshToken
+            {
+                Token = refreshToken,
+                ExpiresOn = refreshTokenExpiration
+            });
+
+            await _userManager.UpdateAsync(user);
+            // return token 
+            var response = new AuthResponse(user.Id, user.Email, user.FirstName, user.LastName, Token: token, ExpiresIn: expiresIn * 60, refreshToken, refreshTokenExpiration);
+
+            return Result.Success<AuthResponse>(response);
+        }
+
+        var error = result.Errors.First();
+        
+        return Result.Failure<AuthResponse>(new Error(error.Code, error.Description , StatusCodes.Status404NotFound));
+
+    }
+
+
     private static string GenerateRefreshToken()
     {
         return Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));

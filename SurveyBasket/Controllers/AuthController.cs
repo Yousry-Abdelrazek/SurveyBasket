@@ -37,6 +37,17 @@ public class AuthController(IAuthService authService, ILogger<AuthController> lo
         //    : Problem(title: authResult.Error.Code, detail: authResult.Error.Description, statusCode: StatusCodes.Status400BadRequest);
 
     }
+    [HttpPost("register")]
+    public async Task<IActionResult> RegisterAsync([FromBody] RegisterRequest request ,  CancellationToken cancellationToken = default)
+    {
+        var authResult = await _authService.RegisterAsync(request, cancellationToken);
+
+        return authResult.IsSuccess
+            ? Ok(authResult.Value)
+            : authResult.ToProblem();
+        //    : Problem(title: authResult.Error.Code, detail: authResult.Error.Description, statusCode: StatusCodes.Status400BadRequest);
+
+    }
 
     [HttpPut("revoke-refresh-token")]
     public async Task<IActionResult> RevokeRefreshAsync([FromBody] RefreshTokenRequest request ,  CancellationToken cancellationToken = default)
