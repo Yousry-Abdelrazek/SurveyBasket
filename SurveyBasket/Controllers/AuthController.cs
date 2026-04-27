@@ -43,7 +43,18 @@ public class AuthController(IAuthService authService, ILogger<AuthController> lo
         var authResult = await _authService.RegisterAsync(request, cancellationToken);
 
         return authResult.IsSuccess
-            ? Ok(authResult.Value)
+            ? Ok()
+            : authResult.ToProblem();
+        //    : Problem(title: authResult.Error.Code, detail: authResult.Error.Description, statusCode: StatusCodes.Status400BadRequest);
+
+    }
+    [HttpPost("confirm-email")]
+    public async Task<IActionResult> ConfirmEmailAsync([FromBody] ConfirmEmailRequest request ,  CancellationToken cancellationToken = default)
+    {
+        var authResult = await _authService.ConfirmEmailAsync(request, cancellationToken);
+
+        return authResult.IsSuccess
+            ? Ok()
             : authResult.ToProblem();
         //    : Problem(title: authResult.Error.Code, detail: authResult.Error.Description, statusCode: StatusCodes.Status400BadRequest);
 
