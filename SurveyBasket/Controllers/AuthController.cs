@@ -49,9 +49,20 @@ public class AuthController(IAuthService authService, ILogger<AuthController> lo
 
     }
     [HttpPost("confirm-email")]
-    public async Task<IActionResult> ConfirmEmailAsync([FromBody] ConfirmEmailRequest request ,  CancellationToken cancellationToken = default)
+    public async Task<IActionResult> ConfirmEmailAsync([FromBody] ConfirmEmailRequest request )
     {
-        var authResult = await _authService.ConfirmEmailAsync(request, cancellationToken);
+        var authResult = await _authService.ConfirmEmailAsync(request);
+
+        return authResult.IsSuccess
+            ? Ok()
+            : authResult.ToProblem();
+        //    : Problem(title: authResult.Error.Code, detail: authResult.Error.Description, statusCode: StatusCodes.Status400BadRequest);
+
+    }
+    [HttpPost("resend-confirmation-email")]
+    public async Task<IActionResult> ResendConfirmationEmailAsync([FromBody] ResendConfirmationEmailRequest request )
+    {
+        var authResult = await _authService.ResendConfirmationEmailAsync(request);
 
         return authResult.IsSuccess
             ? Ok()

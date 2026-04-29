@@ -153,7 +153,7 @@ public class AuthService(
         return Result.Failure<AuthResponse>(new Error(error.Code, error.Description , StatusCodes.Status404NotFound));
 
     }
-    public async Task<Result> ConfirmEmailAsync(ConfirmEmailRequest request, CancellationToken cancellationToken = default)
+    public async Task<Result> ConfirmEmailAsync(ConfirmEmailRequest request)
     {
         if(await _userManager.FindByIdAsync(request.UserId) is not { } user)
             return Result.Failure(UserErrors.InvalidCode);
@@ -180,6 +180,24 @@ public class AuthService(
         var error = result.Errors.First();
         return Result.Failure(new Error(error.Code, error.Description, StatusCodes.Status400BadRequest));
 
+    }
+    public async Task<Result> ResendConfirmationEmailAsync (ResendConfirmationEmailRequest request)
+    {
+        if (await _userManager.FindByEmailAsync(request.Email) is not { } user)
+            return Result.Success(); // Don't reveal that the email doesn't exist
+
+        if(user.EmailConfirmed)
+            return Result.Failure(UserErrors.DuplicatedEmailConfirmation);
+
+        var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+        code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+
+        // Send TO Email 
+
+        _logger.LogInformation("Confirmation code for {Email}: {Code}", user.Email, code);
+
+
+        return Result.Success();
     }
 
 
