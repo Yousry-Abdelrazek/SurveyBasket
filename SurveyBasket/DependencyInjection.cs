@@ -1,5 +1,8 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.IdentityModel.Tokens;
+using StackExchange.Redis;
+using SurveyBasket.Settings;
 using System.Text;
 
 namespace SurveyBasket;
@@ -12,6 +15,7 @@ public static class DependencyInjection
         services.AddControllers();
 
         services.AddHybridCache();
+
 
         services.AddCors(options =>
             options.AddDefaultPolicy(builder =>
@@ -42,9 +46,14 @@ public static class DependencyInjection
         services.AddScoped<IQuestionService, QuestionService>();
         services.AddScoped<IVoteService, VoteService>();
         services.AddScoped<IResultService, ResultService>();
+        services.AddScoped<IEmailSender, EmailService>(); //
 
         services.AddExceptionHandler<GlobalExceptionHandler>();
         services.AddProblemDetails();
+
+        services.AddHttpContextAccessor();
+
+        services.Configure<MailSettings>(configuration.GetSection(nameof(MailSettings)));//
 
         return services;
     }
