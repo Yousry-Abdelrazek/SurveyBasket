@@ -18,6 +18,7 @@
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
   - [Configuration](#configuration)
+- [Background Jobs](#background-jobs)
 - [API Reference](#api-reference)
   - [Authentication](#authentication)
   - [Polls](#polls)
@@ -32,7 +33,7 @@
 
 ## Overview
 
-**SurveyBasket** is a RESTful API that allows users to create and manage surveys/polls, add questions with multiple-choice answers, collect votes from authenticated users, and retrieve analytics on the results. It features JWT-based authentication with refresh tokens, email confirmation, structured error handling, and hybrid caching.
+**SurveyBasket** is a RESTful API that allows users to create and manage surveys/polls, add questions with multiple-choice answers, collect votes from authenticated users, and retrieve analytics on the results. It features JWT-based authentication with refresh tokens, email confirmation, structured error handling, hybrid caching, and Hangfire-powered background jobs for email and poll notifications.
 
 ---
 
@@ -46,6 +47,7 @@
 | **Validation**      | FluentValidation (auto-validated via SharpGrip integration)  |
 | **Object Mapping**  | Mapster                                                      |
 | **Caching**         | Hybrid Cache (In-Memory + Redis via StackExchange.Redis)     |
+| **Background Jobs** | Hangfire + SQL Server storage                                |
 | **Email**           | MailKit                                                      |
 | **Logging**         | Serilog                                                      |
 | **API Docs**        | OpenAPI / Swagger UI / Scalar                                |
@@ -110,13 +112,45 @@ dotnet run --project SurveyBasket
 
 Update `appsettings.json` (or use **User Secrets** / environment variables) with the following sections:
 
-| Section                | Purpose                                |
-| ---------------------- | -------------------------------------- |
-| `ConnectionStrings`    | SQL Server connection string           |
-| `Jwt`                  | Issuer, Audience, Key, ExpiryMinutes   |
-| `MailSettings`         | SMTP host, port, credentials, sender   |
-| `AllowedOrigins`       | CORS allowed origins array             |
-| `Serilog`              | Logging sinks & levels                 |
+| Section                                  | Purpose                                      |
+| ---------------------------------------- | -------------------------------------------- |
+| `ConnectionStrings:DefaultConnection`    | Main SQL Server database connection string   |
+| `ConnectionStrings:Redis`                | Redis connection string for distributed cache |
+| `ConnectionStrings:HangfireConnection`   | SQL Server connection for Hangfire job storage |
+| `Jwt`                                    | Issuer, Audience, Key, ExpiryMinutes         |
+| `MailSettings`                           | SMTP host, port, credentials, sender         |
+| `HangfireSettings`                       | Hangfire dashboard username and password     |
+| `AllowedOrigins`                         | CORS allowed origins array                   |
+| `Serilog`                                | Logging sinks & levels                       |
+
+---
+
+## Background Jobs
+
+SurveyBasket uses **Hangfire** to process long-running work outside the HTTP request pipeline.
+
+| Job Type | Trigger | Description |
+| -------- | ------- | ----------- |
+| Fire-and-forget email confirmation | User registration or resend confirmation request | Queues confirmation emails through `IEmailSender.SendEmailAsync` |
+| Fire-and-forget poll notification | Publishing a poll that starts today | Queues a notification email for users when a new poll becomes available |
+| Recurring poll notification | Daily via `Cron.Daily` | Checks for published polls starting today and sends notifications |
+
+Hangfire is configured in `DependencyInjection.cs` with SQL Server storage using the `ConnectionStrings:HangfireConnection` value. The processing server is registered with `AddHangfireServer()`.
+
+The Hangfire dashboard is available at:
+
+```text
+/Jobs
+```
+
+Dashboard access is protected by basic authentication using:
+
+| Setting | Purpose |
+| ------- | ------- |
+| `HangfireSettings:UserName` | Dashboard username |
+| `HangfireSettings:Password` | Dashboard password |
+
+Before running background jobs locally, make sure the Hangfire SQL Server database referenced by `HangfireConnection` exists. Hangfire will create its own schema/tables inside that database on startup.
 
 ---
 

@@ -1,4 +1,5 @@
 ﻿
+using Hangfire;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -231,7 +232,10 @@ public class AuthService(
                }
             );
 
-        await _emailSender.SendEmailAsync(user.Email!, "✅ Survey Basket : Confirm your email", emailBody);
+        BackgroundJob.Enqueue(() => _emailSender.SendEmailAsync(user.Email!, "✅ Survey Basket : Confirm your email", emailBody));
+
+        await Task.CompletedTask;
+
     }
 
 
