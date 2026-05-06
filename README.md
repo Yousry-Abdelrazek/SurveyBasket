@@ -21,6 +21,7 @@
 - [Background Jobs](#background-jobs)
 - [API Reference](#api-reference)
   - [Authentication](#authentication)
+  - [Account Management](#account-management)
   - [Polls](#polls)
   - [Questions](#questions)
   - [Voting](#voting)
@@ -33,7 +34,7 @@
 
 ## Overview
 
-**SurveyBasket** is a RESTful API that allows users to create and manage surveys/polls, add questions with multiple-choice answers, collect votes from authenticated users, and retrieve analytics on the results. It features JWT-based authentication with refresh tokens, email confirmation, structured error handling, hybrid caching, and Hangfire-powered background jobs for email and poll notifications.
+**SurveyBasket** is a RESTful API that allows users to create and manage surveys/polls, add questions with multiple-choice answers, collect votes from authenticated users, and retrieve analytics on the results. It features JWT-based authentication with refresh tokens, email confirmation, password recovery, account/profile management, structured error handling, hybrid caching, and Hangfire-powered background jobs for email and poll notifications.
 
 ---
 
@@ -66,6 +67,7 @@ SurveyBasket/
 │   ├── Polls/
 │   ├── Questions/
 │   ├── Results/
+│   ├── Users/
 │   └── Votes/
 ├── Controllers/            # API endpoints
 ├── Entities/               # Domain models (EF Core entities)
@@ -132,6 +134,7 @@ SurveyBasket uses **Hangfire** to process long-running work outside the HTTP req
 | Job Type | Trigger | Description |
 | -------- | ------- | ----------- |
 | Fire-and-forget email confirmation | User registration or resend confirmation request | Queues confirmation emails through `IEmailSender.SendEmailAsync` |
+| Fire-and-forget password reset email | Forget password request | Queues reset password emails through `IEmailSender.SendEmailAsync` |
 | Fire-and-forget poll notification | Publishing a poll that starts today | Queues a notification email for users when a new poll becomes available |
 | Recurring poll notification | Daily via `Cron.Daily` | Checks for published polls starting today and sends notifications |
 
@@ -163,7 +166,7 @@ Before running background jobs locally, make sure the Hangfire SQL Server databa
 
 ### Authentication
 
-Authentication endpoints handle user registration, login, email confirmation, and token management.
+Authentication endpoints handle user registration, login, email confirmation, password recovery, and token management.
 
 | Method | Endpoint                                  | Description                          | Auth |
 | ------ | ----------------------------------------- | ------------------------------------ | ---- |
@@ -171,6 +174,8 @@ Authentication endpoints handle user registration, login, email confirmation, an
 | POST   | `/Auth/register`                          | Register a new user account          | ❌    |
 | POST   | `/Auth/confirm-email`                     | Confirm user email address           | ❌    |
 | POST   | `/Auth/resend-confirmation-email`         | Resend confirmation email            | ❌    |
+| POST   | `/Auth/Forget-Password`                   | Send password reset email            | ❌    |
+| POST   | `/Auth/Reset-Password`                    | Reset password using reset code      | ❌    |
 | POST   | `/Auth/refresh`                           | Refresh an expired access token      | ❌    |
 | PUT    | `/Auth/revoke-refresh-token`              | Revoke an active refresh token       | ❌    |
 
@@ -261,6 +266,44 @@ Authentication endpoints handle user registration, login, email confirmation, an
 
 </details>
 
+#### `POST /Auth/Forget-Password` — Send Password Reset Email
+
+<details>
+<summary>Request / Response</summary>
+
+**Request Body:**
+```json
+{
+  "email": "user@example.com"
+}
+```
+
+**Success Response** `200 OK`: *(empty body — reset password email queued if the email exists)*
+
+This endpoint does not reveal whether the email address exists.
+
+</details>
+
+#### `POST /Auth/Reset-Password` — Reset Password
+
+<details>
+<summary>Request / Response</summary>
+
+**Request Body:**
+```json
+{
+  "email": "user@example.com",
+  "newPassword": "NewP@ssw0rd123",
+  "code": "password-reset-code"
+}
+```
+
+**Success Response** `200 OK`
+
+**Error Responses:** `401 Unauthorized` — Invalid reset code or unconfirmed email.
+
+</details>
+
 #### `POST /Auth/refresh` — Refresh Token
 
 <details>
@@ -296,6 +339,75 @@ Authentication endpoints handle user registration, login, email confirmation, an
 **Success Response** `204 No Content`
 
 **Error Responses:** `401 Unauthorized` — Invalid tokens.
+
+</details>
+
+---
+
+### Account Management
+
+Account endpoints let an authenticated user read and update their own profile and change their password.
+
+| Method | Endpoint                  | Description                         | Auth |
+| ------ | ------------------------- | ----------------------------------- | ---- |
+| GET    | `/me`                     | Get current user profile            | 🔒   |
+| PUT    | `/me/update-profile`      | Update current user profile         | 🔒   |
+| PUT    | `/me/change-pass`         | Change current user password        | 🔒   |
+
+#### `GET /me` — Get User Profile
+
+<details>
+<summary>Response</summary>
+
+**Success Response** `200 OK`:
+```json
+{
+  "email": "user@example.com",
+  "userName": "user@example.com",
+  "firstName": "John",
+  "lastName": "Doe"
+}
+```
+
+**Error Responses:** `401 Unauthorized` — Missing or invalid JWT Bearer token.
+
+</details>
+
+#### `PUT /me/update-profile` — Update User Profile
+
+<details>
+<summary>Request / Response</summary>
+
+**Request Body:**
+```json
+{
+  "firstName": "John",
+  "lastName": "Doe"
+}
+```
+
+**Success Response** `204 No Content`
+
+**Error Responses:** `400 Bad Request` — Validation error. `401 Unauthorized` — Missing or invalid JWT Bearer token.
+
+</details>
+
+#### `PUT /me/change-pass` — Change Password
+
+<details>
+<summary>Request / Response</summary>
+
+**Request Body:**
+```json
+{
+  "currentPassword": "P@ssw0rd123",
+  "newPassword": "NewP@ssw0rd123"
+}
+```
+
+**Success Response** `204 No Content`
+
+**Error Responses:** `400 Bad Request` — Invalid current password or password validation error. `401 Unauthorized` — Missing or invalid JWT Bearer token.
 
 </details>
 
@@ -596,6 +708,7 @@ erDiagram
         string FirstName
         string LastName
         string Email
+        string UserName
     }
 
     Poll {
@@ -662,8 +775,10 @@ All errors follow the **RFC 7807 Problem Details** format via ASP.NET Core's `Pr
 | `User.InvalidRefreshToken`     | 401         | Invalid refresh token                          |
 | `User.DuplicatedEmail`         | 409         | Email already registered                       |
 | `User.EmailNotConfirmed`       | 401         | Email not yet confirmed                        |
-| `User.InvalidCode`             | 401         | Invalid email confirmation code                |
+| `User.InvalidCode`             | 401         | Invalid email confirmation or password reset code |
 | `User.DuplicatedEmailConfirmation` | 409     | Email already confirmed                        |
+| `PasswordMismatch`             | 400         | Current password is incorrect                  |
+| `InvalidToken`                 | 401         | Password reset token is invalid                |
 | `Poll.NotFound`                | 404         | Poll not found                                 |
 | `Poll.AlreadyExists`           | 409         | Duplicate poll title                           |
 | `Question.NotFound`            | 404         | Question not found                             |
