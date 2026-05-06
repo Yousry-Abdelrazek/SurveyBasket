@@ -25,7 +25,10 @@ public class NotificationService(
                 .AsNoTracking()
                 .FirstOrDefaultAsync();
 
-            polls = [poll!];
+            if (poll == null)
+                return;
+
+            polls = [poll];
         }
         else
         {
